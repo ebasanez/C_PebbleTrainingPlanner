@@ -1,7 +1,7 @@
 C_PebbleTrainingPlanner
 =======================
 
-Series chrono for your training
+Series chrono for your training.
 
 With this app, you can program the number and lenght of your series and resting.
 
