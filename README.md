@@ -7,7 +7,7 @@ With this app, you can program the number and lenght of your series and resting.
 
 Select time "CLICK!" to make your series or rest last until select is pressed.
 
-Press up or down during series or rest to switch to countdown mode and back (only in series/rest with defined deadline".
+Press up or down during series or rest to switch to countdown mode and back (only in series/rest with defined deadline).
 
 
 Future features: 
