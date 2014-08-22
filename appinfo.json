@@ -1,0 +1,19 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "enrique.basanez@gmail.com",
+    "longName": "[C]Training planner",
+    "projectType": "native",
+    "resources": {
+        "media": []
+    },
+    "shortName": "Training Planner",
+    "uuid": "64151e9e-4678-4a55-b2c5-a7e0c02016da",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
