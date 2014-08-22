@@ -93,7 +93,7 @@ static void draw_window(Window *window){
     if(rest_time < 0){
       buff_length += snprintf(label_work_pre + buff_length,255 - buff_length,"REST UNTIL CLICK\n");
     }
-    snprintf(label_work_pre + buff_length,255 - buff_length,"\nCLICK TO START\n");
+    snprintf(label_work_pre + buff_length,255 - buff_length,"\nCLICK TO START");
     text_layer_set_text(layer_work_pre,label_work_pre);
   }
   
@@ -127,15 +127,27 @@ static void draw_window(Window *window){
   }
 
   if(window == windows[5]){
+  int buffer_length = snprintf(label_work_end,512,"SUMMARY:\n\n");
+    int total = 0;
+    int i;
+    for(i = 0; i < series_num; i++){
+      buffer_length += snprintf(label_work_end+buffer_length,512-buffer_length,"SERIES %d: %02d:%02d\n", i, (int)series_times[i]/60,series_times[i] % 60);
+      total += series_times[i];
+      if(rest_time != 0){
+        buffer_length += snprintf(label_work_end+buffer_length,512-buffer_length,"REST    %d: %02d:%02d\n", i, (int)rest_times[i]/60,rest_times[i] % 60);
+        total += rest_times[i];
+      }
+    }
+    snprintf(label_work_end+buffer_length,512-buffer_length,"\nTOTAL: %02d:%02d\n", (int)total/60,total % 60);
+    text_layer_set_text(layer_work_end, label_work_end);  
     
-//    text_layer_set_text(layer_work_end,label_work_end);  
-    text_layer_set_text(layer_work_end,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam quam tellus, fermentu  m quis vulputate quis, vestibulum interdum sapien. Vestibulum lobortis pellentesque pretium. Quisque ultricies purus e  u orci convallis lacinia. Cras a urna mi. Donec convallis ante id dui dapibus nec ullamcorper erat egestas. Aenean a m  auris a sapien commodo lacinia. Sed posuere mi vel risus congue ornare. Curabitur leo nisi, euismod ut pellentesque se  d, suscipit sit amet lorem. Aliquam eget sem vitae sem aliquam ornare. In sem sapien, imperdiet eget pharetra a, lacin  ia ac justo. Suspendisse at ante nec felis facilisis eleifend.");
+    //text_layer_set_text(layer_work_end,"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam quam tellus, fermentu  m quis vulputate quis, vestibulum interdum sapien. Vestibulum lobortis pellentesque pretium. Quisque ultricies purus e  u orci convallis lacinia. Cras a urna mi. Donec convallis ante id dui dapibus nec ullamcorper erat egestas. Aenean a m  auris a sapien commodo lacinia. Sed posuere mi vel risus congue ornare. Curabitur leo nisi, euismod ut pellentesque se  d, suscipit sit amet lorem. Aliquam eget sem vitae sem aliquam ornare. In sem sapien, imperdiet eget pharetra a, lacin  ia ac justo. Suspendisse at ante nec felis facilisis eleifend.");
     GRect bounds = layer_get_bounds(window_get_root_layer(window));
     GSize max_size = text_layer_get_content_size(layer_work_end);
+    // Pongo el maximo de ancho de la pantalla hasta ver porque esta podienndo 109 en vez de 144:
+    max_size.w = 144;
     text_layer_set_size(layer_work_end, max_size);
     scroll_layer_set_content_size(layer_work_end_scroll, GSize(bounds.size.w, max_size.h + vert_scroll_text_padding));
-   
-    
   }
 }
 
@@ -332,6 +344,7 @@ static void window_load(Window *window) {
     
     layer_work_end = text_layer_create(GRect(0,0,bounds.size.w, 2000));
     text_layer_set_text_alignment(layer_work_end, GTextAlignmentCenter);
+    text_layer_set_font(layer_work_end, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
     
     layer_work_end_scroll = scroll_layer_create(layer_get_frame(window_layer));
     scroll_layer_add_child(layer_work_end_scroll, text_layer_get_layer(layer_work_end));
@@ -339,6 +352,7 @@ static void window_load(Window *window) {
 
     layer_add_child(window_layer,scroll_layer_get_layer(layer_work_end_scroll));
       
+    
     // Remove all windows from stack but first
     window_stack_remove(windows[1],false);
     window_stack_remove(windows[2],false);
