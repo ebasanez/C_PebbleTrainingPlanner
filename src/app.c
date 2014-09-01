@@ -2,7 +2,7 @@
 #include <pebble_fonts.h>
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define PAUSED 2
+#define STOPPED 2
 #define WORKING 1
 #define RESTING 0 
 #define ENDED -1 
@@ -28,8 +28,10 @@ static TextLayer *layer_series_time;
 static TextLayer *layer_rest_time_title;
 static TextLayer *layer_rest_time;
 static TextLayer *layer_work_pre;
+static TextLayer *layer_work_pre_center;
 static TextLayer *layer_work_title;
 static TextLayer *layer_work;
+static TextLayer *layer_pause;
 static TextLayer *layer_work_end;
 static ScrollLayer *layer_work_end_scroll;
 
@@ -41,7 +43,7 @@ static char label_work_title[255];
 static char label_work[6];
 static char label_work_end[512];
 
-static int status = WORKING;
+static int status = STOPPED;
 static int mode = 0;
 static int serie_actual = 0;
 static int rest_actual = 0;
@@ -93,7 +95,6 @@ static void draw_window(Window *window){
     if(rest_time < 0){
       buff_length += snprintf(label_work_pre + buff_length,255 - buff_length,"REST UNTIL CLICK\n");
     }
-    snprintf(label_work_pre + buff_length,255 - buff_length,"\nCLICK TO START");
     text_layer_set_text(layer_work_pre,label_work_pre);
   }
   
@@ -171,7 +172,7 @@ static void procesa_fin_rest(){
 }
 
 static void timer_callback(void *context) {
-  if(status != ENDED){
+  if(status == WORKING || status == RESTING){
     if(status == WORKING){
       series_times[serie_actual]++;
       if(series_times[serie_actual]==series_time){
@@ -188,7 +189,16 @@ static void timer_callback(void *context) {
   }
 }
 
+static TextLayer* create_text_layer(Layer *parent_layer, GRect bounds, char *font_key, GTextAlignment alignment, GColor textColor,GColor backgroundColor){
+		TextLayer *result = text_layer_create(bounds);
+    text_layer_set_text_alignment(result, alignment);
+    text_layer_set_font(result, fonts_get_system_font(font_key));
+    text_layer_set_background_color(result,backgroundColor);
+    text_layer_set_text_color(result,textColor);
+		layer_add_child(parent_layer, text_layer_get_layer(result));
+		return result;
 
+}
 
 static void select_click_handler(ClickRecognizerRef recognizer, void *context) {
   if(context == windows[0]){
@@ -266,66 +276,42 @@ static void window_load(Window *window) {
   GRect bounds = layer_get_bounds(window_layer);
   // Pantalla de seleccion de numero de series
   if(window == window_series_num){
-    layer_series_num_title = text_layer_create(GRect(0,10,bounds.size.w, 30));
-    text_layer_set_text_alignment(layer_series_num_title, GTextAlignmentCenter);
-    text_layer_set_font(layer_series_num_title, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_series_num_title));
+		layer_series_num_title = create_text_layer(window_layer,GRect(0,10,bounds.size.w, 30),FONT_KEY_GOTHIC_24_BOLD,GTextAlignmentCenter,GColorWhite,GColorBlack);
     text_layer_set_text(layer_series_num_title,"#SERIES");
     
-    layer_series_num = text_layer_create(GRect(0,60,bounds.size.w, 80));
-    text_layer_set_text_alignment(layer_series_num, GTextAlignmentCenter);
-    text_layer_set_font(layer_series_num, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_series_num));
+    layer_series_num = create_text_layer(window_layer,GRect(0,60,bounds.size.w, 80),FONT_KEY_BITHAM_42_BOLD,GTextAlignmentCenter,GColorBlack,GColorWhite);
   }
   
   // Pantalla de seleccion de duracion de series
   if(window == window_series_time){
-    layer_series_time_title = text_layer_create(GRect(0,10,bounds.size.w, 30));
-    text_layer_set_text_alignment(layer_series_time_title, GTextAlignmentCenter);
-    text_layer_set_font(layer_series_time_title, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_series_time_title));
+    layer_series_time_title = create_text_layer(window_layer, GRect(0,10,bounds.size.w, 30),FONT_KEY_GOTHIC_24_BOLD,GTextAlignmentCenter,GColorWhite,GColorBlack);
     text_layer_set_text(layer_series_time_title,"SERIES TIME");
     
-    layer_series_time = text_layer_create(GRect(0,60,bounds.size.w, 80));
-    text_layer_set_text_alignment(layer_series_time, GTextAlignmentCenter);
-    text_layer_set_font(layer_series_time, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_series_time));
+    layer_series_time = create_text_layer(window_layer, GRect(0,60,bounds.size.w, 80),FONT_KEY_BITHAM_42_BOLD,GTextAlignmentCenter,GColorBlack,GColorWhite);
   }
 
   // Pantalla de seleccion de duracion de descansos
   if(window == window_rest_time){
-    layer_rest_time_title = text_layer_create(GRect(0,10,bounds.size.w, 30));
-    text_layer_set_text_alignment(layer_rest_time_title, GTextAlignmentCenter);
-    text_layer_set_font(layer_rest_time_title, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_rest_time_title));
+    layer_rest_time_title = create_text_layer(window_layer, GRect(0,10,bounds.size.w, 30),FONT_KEY_GOTHIC_24_BOLD,GTextAlignmentCenter,GColorWhite,GColorBlack);
     text_layer_set_text(layer_rest_time_title,"REST TIME");
     
-    layer_rest_time = text_layer_create(GRect(0,60,bounds.size.w, 90));
-    text_layer_set_text_alignment(layer_rest_time, GTextAlignmentCenter);
-    text_layer_set_font(layer_rest_time, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_rest_time));
+    layer_rest_time = create_text_layer(window_layer, GRect(0,60,bounds.size.w, 90),FONT_KEY_BITHAM_42_BOLD,GTextAlignmentCenter,GColorBlack,GColorWhite);
   }
   
  // Preworking Window
   if(window == window_work_pre){
-    layer_work_pre = text_layer_create(GRect(0,0,bounds.size.w, 100));
-    text_layer_set_text_alignment(layer_work_pre, GTextAlignmentCenter);
-    text_layer_set_font(layer_work_pre, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_work_pre));
-  }
+    layer_work_pre = create_text_layer(window_layer, GRect(0,0,bounds.size.w, 100),FONT_KEY_GOTHIC_18_BOLD, GTextAlignmentCenter,GColorBlack,GColorWhite);
+		layer_work_pre_center = create_text_layer(window_layer, GRect(0,72,bounds.size.w, 30),FONT_KEY_GOTHIC_24_BOLD, GTextAlignmentCenter,GColorWhite,GColorBlack);
+		text_layer_set_text(layer_work_pre_center,"CLICK TO START");
+	}
   
   // Working ScreWindowen
   if(window == window_work_progress){
-    layer_work_title = text_layer_create(GRect(0,10,bounds.size.w, 120));
-    text_layer_set_text_alignment(layer_work_title, GTextAlignmentCenter);
-    text_layer_set_font(layer_work_title, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_work_title));
-    
-    layer_work = text_layer_create(GRect(0,60,bounds.size.w, 100));
-    text_layer_set_text_alignment(layer_work, GTextAlignmentCenter);
-    text_layer_set_font(layer_work, fonts_get_system_font(FONT_KEY_BITHAM_42_BOLD));
-    layer_add_child(window_layer, text_layer_get_layer(layer_work));
-    
+    layer_work_title = create_text_layer(window_layer, GRect(0,10,bounds.size.w, 120),FONT_KEY_GOTHIC_24_BOLD,GTextAlignmentCenter,GColorBlack,GColorWhite);
+    layer_work = create_text_layer(window_layer, GRect(0,60,bounds.size.w, 100),FONT_KEY_BITHAM_42_BOLD,GTextAlignmentCenter,GColorBlack,GColorWhite);
+		layer_pause = create_text_layer(window_layer, GRect(0,160,bounds.size.w, 100),FONT_KEY_BITHAM_42_BOLD,GTextAlignmentCenter,GColorWhite,GColorBlack);
+		text_layer_set_text(layer_pause,"PAUSED");
+		
     // Reset working vars to start values
     status = WORKING; 
     serie_actual = 0;
@@ -341,17 +327,15 @@ static void window_load(Window *window) {
   
   // End&recap Window
   if(window == window_work_end){
-    
     layer_work_end = text_layer_create(GRect(0,0,bounds.size.w, 2000));
     text_layer_set_text_alignment(layer_work_end, GTextAlignmentCenter);
     text_layer_set_font(layer_work_end, fonts_get_system_font(FONT_KEY_GOTHIC_18_BOLD));
-    
-    layer_work_end_scroll = scroll_layer_create(layer_get_frame(window_layer));
+
+		layer_work_end_scroll = scroll_layer_create(layer_get_frame(window_layer));
     scroll_layer_add_child(layer_work_end_scroll, text_layer_get_layer(layer_work_end));
     scroll_layer_set_click_config_onto_window(layer_work_end_scroll, window);
 
     layer_add_child(window_layer,scroll_layer_get_layer(layer_work_end_scroll));
-      
     
     // Remove all windows from stack but first
     window_stack_remove(windows[1],false);
@@ -377,10 +361,12 @@ static void window_unload(Window *window) {
   }
   if(window == windows[3]){
     text_layer_destroy(layer_work_pre);
+    text_layer_destroy(layer_work_pre_center);
   }
   if(window == windows[4]){
     text_layer_destroy(layer_work_title);
     text_layer_destroy(layer_work);
+		text_layer_destroy(layer_pause);
   }
   if(window == windows[5]){
     text_layer_destroy(layer_work_end);

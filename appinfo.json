@@ -4,15 +4,27 @@
         ""
     ],
     "companyName": "enrique.basanez@gmail.com",
-    "longName": "[C]Training planner",
+    "longName": "[C]Workout Timer",
     "projectType": "native",
     "resources": {
-        "media": []
+        "media": [
+            {
+                "file": "images/Menu icon_2.png",
+                "menuIcon": true,
+                "name": "MENU_ICON_2",
+                "type": "png"
+            },
+            {
+                "file": "images/Menu icon.png",
+                "name": "MENU_ICON",
+                "type": "png"
+            }
+        ]
     },
-    "shortName": "Training Planner",
+    "shortName": "Workout Timer",
     "uuid": "64151e9e-4678-4a55-b2c5-a7e0c02016da",
     "versionCode": 1,
-    "versionLabel": "1.0",
+    "versionLabel": "1.1",
     "watchapp": {
         "watchface": false
     }
